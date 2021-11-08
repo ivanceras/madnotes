@@ -7,4 +7,11 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+#sauron = "0.43"
 sauron = { path = "../../sauron" }
+ultron = { path = "../../ultron/packages/ultron" }
+rune = "0.9"
+runestick = "0.9"
+console_error_panic_hook = "0.1"
+log = "0.4"
+console_log = { version = "0.2", features = ["color"]}
