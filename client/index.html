@@ -6,8 +6,9 @@
         body { font-family: verdana, arial, monospace; }
     </style>
     <script type=module>
-        import init from './pkg/client.js';
+        import init,{ initThreadPool } from './pkg/client.js';
         await init().catch(console.error);
+        await initThreadPool(navigator.hardwareConcurrency).catch(console.error);
     </script>
   </head>
   <body>

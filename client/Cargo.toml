@@ -4,12 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["rlib","cdylib"]
 
 [dependencies]
 #sauron = "0.43"
 sauron = { path = "../../sauron" }
-ultron = { path = "../../ultron/packages/ultron" }
+ultron = { path = "../../ultron/packages/ultron", default-features = false, features = ["with-dom", "with-navigator-clipboard"]  }
+#ultron = { path = "../../ultron/packages/ultron" }
 rune = "0.9"
 runestick = "0.9"
 console_error_panic_hook = "0.1"

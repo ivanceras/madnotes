@@ -1,4 +1,7 @@
 #!/bin/sh
 
-basic-http-server -a 0.0.0.0:4005 ./client
+. ./build.sh &&\
+
+
+cargo run --bin server --release --no-default-features --features="open-ports"
 
