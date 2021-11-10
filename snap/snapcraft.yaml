@@ -1,0 +1,28 @@
+name: madnotes
+version: git
+summary: Create and share notes
+description: |
+    Madnotes allows you to create and share documents that can contain
+    live code, equations, data visualizations and narrative text.
+  composable:
+  - Notes
+  - Live code
+
+icon: assets/madnotes.svg
+base: core18
+confinement: devmode
+grade: stable
+
+
+parts:
+  madnotes:
+    plugin: rust
+    source: .
+    build-packages:
+      - libwebkit2gtk-4.0-dev
+    stage-packages:
+      - libwebkit2gtk-4.0-37
+
+apps:
+  madnotes:
+    command: bin/madnotes

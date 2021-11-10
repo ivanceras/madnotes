@@ -1,18 +1,35 @@
 [package]
 name = "client"
 version = "0.1.0"
-edition = "2021"
+edition = "2018"
+publish = false
 
 [lib]
-crate-type = ["rlib","cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-#sauron = "0.43"
-sauron = { path = "../../sauron" }
-ultron = { path = "../../ultron/packages/ultron", default-features = false, features = ["with-dom", "with-navigator-clipboard"]  }
-#ultron = { path = "../../ultron/packages/ultron" }
+#sauron = { version= "0.43.4" }
+sauron = { path = "../../sauron", features = ["with-lookup"] }
+log = "0.4"
+console_log = { version = "0.2", features = [] }
+console_error_panic_hook = { version = "0.1" }
+#ultron = { version = "0.2.5", default-features = false, features = ["with-dom", "with-navigator-clipboard"] }
+ultron = { path = "../../ultron/packages/ultron"}
+# using the ammonia feature in sauron-markdown will result an error in the wasm client:  Error resolving module specifier “env”
+sauron-markdown = { path = "../../sauron-markdown", default-features = false } 
+pulldown-cmark = "0.8"
 rune = "0.9"
 runestick = "0.9"
-console_error_panic_hook = "0.1"
-log = "0.4"
-console_log = { version = "0.2", features = ["color"]}
+
+[features]
+external-invoke = [] # external invoke function
+
+
+[profile.release]
+# https://doc.rust-lang.org/cargo/reference/profiles.html
+# optimize for binary size
+#opt-level = "s"
+# optimize for binary size, but also turn off loop vectorization.
+#opt-level = "z"
+lto = true
+#panic = "abort"

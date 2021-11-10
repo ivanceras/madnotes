@@ -12,3 +12,9 @@
 # Issues
 - [ ] Can not run datafusion in wasm
 - [ ] Can not run polars in wasm
+- [ ] Issue with using sauron-markdown on wasm
+    - Uncaught TypeError: Error resolving module specifier “env”. Relative module specifiers must start with “./”, “../” or “/”.
+    - ~~This is most likely caused by pulldown-cmark~~
+        - This was cause by the use of `ammonia`.
+        - And mostlikely the culprit would be `html5ever` and `markup5ever_rcdom`, which is both used in `ammonia` and `sauron-markdown`
+

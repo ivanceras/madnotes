@@ -1,7 +1,12 @@
 [package]
 name = "madnotes"
 version = "0.1.0"
-edition = "2021"
+edition = "2018"
+publish = false
+description = "Create and share notes"
+default-run = "madnotes"
+readme = "./README.md"
+license-file = "./LICENSE"
 
 [[bin]]
 name = "server"
@@ -26,10 +31,39 @@ thiserror = "1"
 futures = "0.3"
 base64 = "0.13"
 
-
 [features]
 default = ["desktop-app"]
 desktop-app = ["web-view", "native-dialog",  "fetch-override", "external-invoke"]
 fetch-override = [] #override the fetch
 open-ports = [] # use a built-in server to open ephemeral port to serve the files
 external-invoke = [] # external invoke function
+
+
+[patch.crates-io]
+#mt-dom = { path = "../mt-dom" }
+
+
+[package.metadata.deb]
+maintainer = "Jovansonlee Cesar <ivanceras@gmail.com>"
+copyright = "2021, Jovansonlee Cesar <ivanceras@gmail.com>"
+license-file = ["LICENSE", "4"]
+extended-description = "Svgbob is a diagramming mode which uses ascii art for rendering diagrams"
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/madnotes", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/madnotes/README", "644"],
+    ["assets/madnotes.desktop", "usr/share/applications/", "644"],
+    ["assets/madnotes.svg", "/usr/share/pixmaps/", "644"],
+]
+
+[package.metadata.bundle]
+identifier = "com.ivanceras.Madnotes"
+icon = ["assets/madnotes.svg"]
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+madnotes = { path = "/usr/bin/madnotes" }
