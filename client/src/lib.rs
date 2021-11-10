@@ -341,6 +341,7 @@ pub fn main() {
         .expect("must have the #app_container in the page::index");
 
     let content = MARKDOWN_EXAMPLE;
+    //let content = ""; // it would crash when using the desktop-app when content is preloaded with long text
     Program::replace_mount(App::with_content(content), &app_container);
 }
 

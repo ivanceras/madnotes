@@ -11,5 +11,5 @@ async fn main() {
     let (socket_tx, _socket_rx) = oneshot::channel();
     let (_shutdown_tx, shutdown_rx) = oneshot::channel::<()>();
 
-    server::serve(settings, None, Some(3030), socket_tx, shutdown_rx).await;
+    server::serve(settings, None, Some(3031), socket_tx, shutdown_rx).await;
 }
