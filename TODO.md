@@ -8,6 +8,21 @@
     - [ ] setup client to get data from server which connects to ipfs
     - [ ] setup client to run datafusion in the server and return the results
 - [ ] An alternative to datafusion is polars which has great support for running in wasm
+- [ ] Add plugins
+    - [ ] Code fence processor and syntax highlighting, based on the language
+        - [ ] Rune script plugin and executor with execution button
+            - [ ] Handle the output of the script
+        - [ ] CSV data plugin to be used for reference in some other scripts such as:
+            - [ ] SQL
+            - [ ] restq
+            - [ ] rune script
+        - [ ] data viewer
+        - [ ] charts, use plotters
+- [ ] Make a POC in which it pulls files from ipfs
+- [ ] Make a POC in which it uploads the notebook into ipfs together with the referenced local files
+    and rewrite their links.
+    - This requires parsing markdown to html, replace the links and back to markdown
+    - Maybe use comrak as alternative since it builds a whole tree of the markdown
 
 # Issues
 - [ ] Can not run datafusion in wasm

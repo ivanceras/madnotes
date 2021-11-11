@@ -1,4 +1,4 @@
-use crate::assets;
+use super::assets;
 use sauron::html;
 use sauron::jss::jss;
 use sauron::prelude::*;
