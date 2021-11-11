@@ -20,6 +20,8 @@ sauron-markdown = { path = "../../sauron-markdown", default-features = false }
 pulldown-cmark = "0.8"
 rune = "0.9"
 runestick = "0.9"
+svgbob = { version = "0.6", path = "../../svgbob/packages/svgbob" }
+ultron-ssg = { version = "0.2",  path = "../../ultron/packages/ultron-ssg" }
 
 [features]
 external-invoke = [] # external invoke function

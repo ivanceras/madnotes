@@ -55,50 +55,61 @@ pub fn main() {
 }
 
 const MARKDOWN_EXAMPLE: &str = r#"
-An h1 header
+Madnotes
 ============
 
-Paragraphs are separated by a blank line.
+Madnotes is and opensource application that allows you to create and share documents that can contain
+live code, equations, data visualization and narrative text.
+The files are uploaded in ipfs to preserve the linked components and data being referenced.
 
-2nd paragraph. *Italic*, **bold**, and `monospace`. Itemized lists
-look like:
+## Features
+- Uses `ipfs` to upload and reference files
+- Data visualization and charting
+- Primarily use csv for data processing and storage
+- Supports running SQL against a csv data
 
-  * this one
-  * that one
-  * the other one
+## Security
+- Sharing of notes is safe as the scripts is run in a sandbox environment using wasm.
+- Referenced files are coming from ipfs node and therefore the runtime is not allowed to access local files of the user.
 
-Note that --- not considering the asterisk --- the actual text
-content starts at 4-columns in.
+
+
+You can write madnotes using markdown.
 
 > Block quotes are
 > written like so.
->
-> They can span multiple paragraphs,
-> if you like.
-
-Use 3 dashes for an em-dash. Use 2 dashes for ranges (ex., "it's all
-in chapters 12--14"). Three dots ... will be converted to an ellipsis.
-Unicode is supported. ☺
 
 
+```info
+You can create information text like this
+```
 
-An h2 header
-------------
+```note
+Note that madnotes can be extended with plugins
+```
 
+
+```warning
+There is also a warning admonition.
+```
+
+You can write list as you would with markdown
 Here's a numbered list:
-
  1. first item
  2. second item
  3. third item
 
-Note again how the actual text starts at 4 columns in (4 characters
-from the left side). Here's a code sample:
+```note
+Note that madnotes, overloaded the code fence tag a lot
+```
+You can write scripts using
+```rune
+fn main(){
+    1 +1
+}
+```
 
-    # Let me re-iterate ...
-    for i in 1 .. 10 { do-something(i) }
-
-As you probably guessed, indented 4 spaces. By the way, instead of
-indenting the block, you can use delimited blocks, if you like:
+Currently we only support 1 scripting language which is Rune.
 
 ~~~
 define foobar() {

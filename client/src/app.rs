@@ -291,7 +291,13 @@ impl Application<Msg> for App {
             },
         };
 
-        [self.editor.style(), css, self.menu.style()].join("\n")
+        [
+            self.editor.style(),
+            css,
+            self.menu.style(),
+            <RenderedMarkdown as View<Msg>>::style(&self.rendered_markdown),
+        ]
+        .join("\n")
     }
 }
 
