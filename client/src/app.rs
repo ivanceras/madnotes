@@ -27,13 +27,26 @@ pub(crate) enum Msg {
 pub struct App {
     editor: Editor<Msg>,
     rendered_markdown: RenderedMarkdown,
-    is_separator_dragging: bool,
-    separator_start: Option<Point2<i32>>,
-    separator_offset_x: i32,
     selection_start: Option<Point2<i32>>,
     selection_end: Option<Point2<i32>>,
     editor_scroll: Point2<i32>,
     menu: Menu<Msg>,
+    separator: Separator,
+}
+
+struct Separator {
+    is_dragging: bool,
+    start: Option<Point2<i32>>,
+    offset_x: i32,
+}
+impl Default for Separator {
+    fn default() -> Self {
+        Self {
+            is_dragging: false,
+            start: None,
+            offset_x: 0,
+        }
+    }
 }
 
 struct RenderedMarkdown {
@@ -67,13 +80,11 @@ impl App {
         Self {
             editor: Editor::from_str(options.clone(), content).on_change(Msg::EditorContentChanged),
             rendered_markdown: RenderedMarkdown::from_str(content),
-            is_separator_dragging: false,
-            separator_start: None,
-            separator_offset_x: 0,
             selection_start: None,
             selection_end: None,
             editor_scroll: Point2::new(0, 0),
             menu: Menu::default().on_activate(|menu_action| Msg::MenuAction(menu_action)),
+            separator: Separator::default(),
         }
     }
 }
@@ -114,10 +125,10 @@ impl Application<Msg> for App {
             }
             Msg::WindowMouseup(client_x, client_y) => {
                 self.menu.hide_menu();
-                if self.is_separator_dragging {
+                if self.separator.is_dragging {
                     self.set_separator_position(client_x, client_y);
-                    self.is_separator_dragging = false;
-                    self.separator_start = None;
+                    self.separator.is_dragging = false;
+                    self.separator.start = None;
                 }
                 Cmd::none()
             }
@@ -126,15 +137,15 @@ impl Application<Msg> for App {
                 Cmd::none()
             }
             Msg::WindowMousemove(client_x, client_y) => {
-                if self.is_separator_dragging {
+                if self.separator.is_dragging {
                     self.set_separator_position(client_x, client_y);
                 }
                 Cmd::none()
             }
             Msg::SeparatorDragStart(client_x, client_y) => {
-                self.is_separator_dragging = true;
-                self.separator_start =
-                    Some(Point2::new(client_x - self.separator_offset_x, client_y));
+                self.separator.is_dragging = true;
+                self.separator.start =
+                    Some(Point2::new(client_x - self.separator.offset_x, client_y));
                 Cmd::none()
             }
             Msg::OpenFileClicked => {
@@ -171,8 +182,8 @@ impl Application<Msg> for App {
                                     Msg::EditorMousedown(me.client_x(), me.client_y())
                                 }),
                                 style! {
-                                    width: format!("calc({} + {})", percent(50), px(self.separator_offset_x)),
-                                    cursor: if self.is_separator_dragging{
+                                    width: format!("calc({} + {})", percent(50), px(self.separator.offset_x)),
+                                    cursor: if self.separator.is_dragging{
                                         "col-resize"
                                     }else{
                                         "default"
@@ -209,8 +220,8 @@ impl Application<Msg> for App {
                             [
                                 class("rendered_markdown"),
                                 style! {
-                                    width: format!("calc({} - {})", percent(50), px(self.separator_offset_x)),
-                                    cursor: if self.is_separator_dragging{
+                                    width: format!("calc({} - {})", percent(50), px(self.separator.offset_x)),
+                                    cursor: if self.separator.is_dragging{
                                         "col-resize"
                                     }else{
                                         "default"
@@ -296,8 +307,8 @@ impl Application<Msg> for App {
 
 impl App {
     fn set_separator_position(&mut self, client_x: i32, _client_y: i32) {
-        if let Some(start) = self.separator_start {
-            self.separator_offset_x = client_x - start.x;
+        if let Some(start) = self.separator.start {
+            self.separator.offset_x = client_x - start.x;
         }
     }
 }
