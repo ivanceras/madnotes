@@ -29,8 +29,6 @@ pub(crate) enum Msg {
 pub struct App {
     editor: Editor<Msg>,
     rendered_markdown: RenderedMarkdown,
-    selection_start: Option<Point2<i32>>,
-    selection_end: Option<Point2<i32>>,
     editor_scroll: Point2<i32>,
     menu: Menu<Msg>,
     separator: Separator,
@@ -64,8 +62,6 @@ impl App {
         Self {
             editor: Editor::from_str(options.clone(), content).on_change(Msg::EditorContentChanged),
             rendered_markdown: RenderedMarkdown::from_str(content),
-            selection_start: None,
-            selection_end: None,
             editor_scroll: Point2::new(0, 0),
             menu: Menu::default().on_activate(|menu_action| Msg::MenuAction(menu_action)),
             separator: Separator::default(),
