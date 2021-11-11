@@ -1,5 +1,6 @@
 use menu::Menu;
 use menu::MenuAction;
+use rendered_markdown::RenderedMarkdown;
 use sauron::jss::jss;
 use sauron::prelude::*;
 use sauron::Window;
@@ -9,6 +10,7 @@ use ultron::nalgebra::Point2;
 
 mod assets;
 mod menu;
+mod rendered_markdown;
 
 #[derive(Clone)]
 pub(crate) enum Msg {
@@ -49,32 +51,14 @@ impl Default for Separator {
     }
 }
 
-struct RenderedMarkdown {
-    content: String,
-}
-impl RenderedMarkdown {
-    fn from_str(content: &str) -> Self {
-        Self {
-            content: content.to_string(),
-        }
-    }
-    fn set_content(&mut self, content: String) {
-        self.content = content;
-    }
-
-    fn view(&self) -> Node<Msg> {
-        sauron_markdown::markdown(&self.content)
-    }
-}
-
 impl App {
     pub fn with_content(content: &str) -> Self {
         let options = ultron::Options {
-            use_block_mode: true,
+            use_block_mode: false,
             show_line_numbers: false,
             show_status_line: false,
             theme_name: Some("ayu-light".to_string()),
-            syntax_token: "bob".to_string(),
+            syntax_token: "md".to_string(),
             ..Default::default()
         };
         Self {
@@ -129,18 +113,28 @@ impl Application<Msg> for App {
                     self.set_separator_position(client_x, client_y);
                     self.separator.is_dragging = false;
                     self.separator.start = None;
+                    Cmd::none()
+                } else {
+                    let effects = self.editor.update(editor::Msg::Mouseup(client_x, client_y));
+                    Cmd::from(effects.localize(Msg::EditorMsg)).measure()
                 }
-                Cmd::none()
             }
             Msg::EditorMousedown(client_x, client_y) => {
-                self.selection_start = Some(Point2::new(client_x, client_y));
-                Cmd::none()
+                let effects = self
+                    .editor
+                    .update(editor::Msg::Mousedown(client_x, client_y));
+                Cmd::from(effects.localize(Msg::EditorMsg)).measure()
             }
             Msg::WindowMousemove(client_x, client_y) => {
                 if self.separator.is_dragging {
                     self.set_separator_position(client_x, client_y);
+                    Cmd::none()
+                } else {
+                    let effects = self
+                        .editor
+                        .update(editor::Msg::Mousemove(client_x, client_y));
+                    Cmd::from(effects.localize(Msg::EditorMsg)).measure()
                 }
-                Cmd::none()
             }
             Msg::SeparatorDragStart(client_x, client_y) => {
                 self.separator.is_dragging = true;
