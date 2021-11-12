@@ -104,8 +104,8 @@ Note that madnotes, overloaded the code fence tag a lot
 ```
 You can write scripts using
 ```rune
-fn main(){
-    1 +1
+pub fn main(number) {
+    add(number) + 10
 }
 ```
 

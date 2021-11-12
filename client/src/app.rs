@@ -12,7 +12,6 @@ mod assets;
 mod menu;
 mod rendered_markdown;
 
-#[derive(Clone)]
 pub(crate) enum Msg {
     EditorMsg(editor::Msg),
     EditorContentChanged(String),
@@ -24,6 +23,7 @@ pub(crate) enum Msg {
     SeparatorDragStart(i32, i32),
     EditorScrolled((i32, i32)),
     OpenFileClicked,
+    RenderedMarkdownMsg(rendered_markdown::Msg),
 }
 
 pub struct App {
@@ -65,6 +65,11 @@ impl App {
             editor_scroll: Point2::new(0, 0),
             menu: Menu::default().on_activate(|menu_action| Msg::MenuAction(menu_action)),
             separator: Separator::default(),
+        }
+    }
+    fn set_separator_position(&mut self, client_x: i32, _client_y: i32) {
+        if let Some(start) = self.separator.start {
+            self.separator.offset_x = client_x - start.x;
         }
     }
 }
@@ -144,6 +149,10 @@ impl Application<Msg> for App {
                 invoke("open");
                 Cmd::none()
             }
+            Msg::RenderedMarkdownMsg(rmsg) => {
+                let effects = self.rendered_markdown.update(rmsg);
+                Cmd::from(effects.map_msg(Msg::RenderedMarkdownMsg))
+            }
         }
     }
 
@@ -218,7 +227,13 @@ impl Application<Msg> for App {
                                     },
                                 },
                             ],
-                            [div([class("padded")], [self.rendered_markdown.view()])],
+                            [div(
+                                [class("padded")],
+                                [self
+                                    .rendered_markdown
+                                    .view()
+                                    .map_msg(Msg::RenderedMarkdownMsg)],
+                            )],
                         ),
                     ],
                 ),
@@ -297,16 +312,9 @@ impl Application<Msg> for App {
             self.menu.style(),
             // written this way instead of just `self.rendered_markdown.style()` since it needs to
             // fill in the `MSG` generic type from `View` trait.
-            <RenderedMarkdown as View<Msg>>::style(&self.rendered_markdown),
+            //<RenderedMarkdown as Component<Msg, ()>>::style(&self.rendered_markdown),
+            self.rendered_markdown.style(),
         ]
         .join("\n")
-    }
-}
-
-impl App {
-    fn set_separator_position(&mut self, client_x: i32, _client_y: i32) {
-        if let Some(start) = self.separator.start {
-            self.separator.offset_x = client_x - start.x;
-        }
     }
 }
