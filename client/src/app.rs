@@ -295,6 +295,8 @@ impl Application<Msg> for App {
             self.editor.style(),
             css,
             self.menu.style(),
+            // written this way instead of just `self.rendered_markdown.style()` since it needs to
+            // fill in the `MSG` generic type from `View` trait.
             <RenderedMarkdown as View<Msg>>::style(&self.rendered_markdown),
         ]
         .join("\n")
