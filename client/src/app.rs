@@ -150,6 +150,7 @@ impl Application<Msg> for App {
                 Cmd::none()
             }
             Msg::RenderedMarkdownMsg(rmsg) => {
+                log::trace!("---->Updating renderedmarkdown with: {:?}", rmsg);
                 let effects = self.rendered_markdown.update(rmsg);
                 Cmd::from(effects.map_msg(Msg::RenderedMarkdownMsg))
             }

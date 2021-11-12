@@ -1,4 +1,5 @@
 use crate::app::rendered_markdown::Config;
+use rune_script::RuneScript;
 use sauron::prelude::*;
 
 pub(crate) mod admonition;
@@ -6,12 +7,17 @@ pub(crate) mod fake_terminal;
 pub(crate) mod rune_script;
 pub(crate) mod svgbob_plugin;
 
-pub(crate) enum Msg {}
+#[derive(Debug)]
+pub(crate) enum Msg {
+    RuneScriptMsg(rune_script::Msg),
+}
 
+#[derive(Debug, Default)]
 pub(crate) struct Plugins {
     code_fence: String,
     content: String,
     config: Config,
+    rune_script: Option<RuneScript<Msg>>,
 }
 
 impl Plugins {
@@ -19,7 +25,7 @@ impl Plugins {
         Self {
             code_fence: "dummy".to_string(),
             content: "dummy".to_string(),
-            config: Config::default(),
+            ..Default::default()
         }
     }
     pub(crate) fn from_code_fence(code_fence: &str, content: &str, config: &Config) -> Self {
@@ -27,13 +33,33 @@ impl Plugins {
             code_fence: code_fence.to_string(),
             content: content.to_string(),
             config: config.clone(),
+            rune_script: if code_fence == "rune" {
+                Some(RuneScript::from_str(content, config))
+            } else {
+                None
+            },
         }
     }
 }
 
-impl Component<Msg, ()> for Plugins {
-    fn update(&mut self, msg: Msg) -> Effects<Msg, ()> {
-        Effects::none()
+impl<XMSG> Component<Msg, XMSG> for Plugins {
+    fn update(&mut self, msg: Msg) -> Effects<Msg, XMSG> {
+        match &*self.code_fence {
+            "rune" => {
+                if let Msg::RuneScriptMsg(rmsg) = msg {
+                    if let Some(rune_script) = self.rune_script.as_mut() {
+                        let effects = rune_script.update(rmsg);
+                        let (local, _external) = effects.localize(Msg::RuneScriptMsg).unzip();
+                        Effects::new(local, [])
+                    } else {
+                        Effects::none()
+                    }
+                } else {
+                    unreachable!()
+                }
+            }
+            _ => Effects::none(),
+        }
     }
 
     fn view(&self) -> Node<Msg> {
@@ -46,7 +72,14 @@ impl Component<Msg, ()> for Plugins {
             "warning" => admonition::warning(&self.content),
             "info" => admonition::info(&self.content),
             "note" => admonition::note(&self.content),
-            "rune" => rune_script::rune_script(&self.content),
+            "rune" => {
+                //let rune_script = RuneScript::from_str(&self.content, &self.config);
+                if let Some(rune_script) = &self.rune_script {
+                    rune_script.view().map_msg(Msg::RuneScriptMsg)
+                } else {
+                    unreachable!()
+                }
+            }
             _ => ultron_ssg::render(
                 &self.content,
                 &self.code_fence,
