@@ -34,4 +34,5 @@
         - And mostlikely the culprit would be `html5ever` and `markup5ever_rcdom`, which is both used in `ammonia` and `sauron-markdown`
 - [ ] The `on_mount` event on the second editor in the `rune` plugin is not triggered.
     - Perhaps because there is already a main editor that is mounted
+    - Perhaps it has to do with the logic in sauron-markdown when creating nodes for each Markdown tags
 

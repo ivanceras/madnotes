@@ -28,7 +28,7 @@ pub(crate) enum Msg {
 
 pub struct App {
     editor: Editor<Msg>,
-    rendered_markdown: RenderedMarkdown,
+    rendered_markdown: RenderedMarkdown<Msg>,
     editor_scroll: Point2<i32>,
     menu: Menu<Msg>,
     separator: Separator,
@@ -105,8 +105,10 @@ impl Application<Msg> for App {
                 Cmd::from(effects.localize(Msg::EditorMsg)).measure()
             }
             Msg::EditorContentChanged(content) => {
-                self.rendered_markdown.set_content(content);
-                Cmd::none().measure()
+                let effects = self
+                    .rendered_markdown
+                    .update(rendered_markdown::Msg::ContentChanged(content));
+                Cmd::none()
             }
             Msg::WindowMouseup(client_x, client_y) => {
                 self.menu.hide_menu();
@@ -152,7 +154,7 @@ impl Application<Msg> for App {
             Msg::RenderedMarkdownMsg(rmsg) => {
                 log::trace!("---->Updating renderedmarkdown with: {:?}", rmsg);
                 let effects = self.rendered_markdown.update(rmsg);
-                Cmd::from(effects.map_msg(Msg::RenderedMarkdownMsg))
+                Cmd::none()
             }
         }
     }

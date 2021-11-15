@@ -10,13 +10,15 @@ mod plugins;
 
 #[derive(Debug)]
 pub(crate) enum Msg {
-    PluginMsg(Rc<RefCell<plugins::Plugins>>, plugins::Msg),
+    PluginMsg(Rc<RefCell<plugins::Plugins<Msg>>>, plugins::Msg),
+    ContentChanged(String),
 }
 
-pub(crate) struct RenderedMarkdown {
+pub(crate) struct RenderedMarkdown<XMSG> {
     content: String,
     config: Config,
-    plugin_context: Rc<RefCell<Context<Plugins, Msg, plugins::Msg>>>,
+    plugin_context: Rc<RefCell<Context<Plugins<Msg>, Msg, plugins::Msg>>>,
+    _phantom_msg: PhantomData<XMSG>,
 }
 
 #[derive(Clone, Debug)]
@@ -38,41 +40,43 @@ pub struct Context<COMP, MSG, CMSG> {
     _phantom_cmsg: PhantomData<CMSG>,
 }
 
-impl RenderedMarkdown {
+impl<XMSG> RenderedMarkdown<XMSG> {
     pub(crate) fn from_str(content: &str) -> Self {
         let config = Config::default();
         Self {
             content: content.to_string(),
             config: Config::default(),
             plugin_context: Rc::new(RefCell::new(Context::new())),
+            _phantom_msg: PhantomData,
         }
-    }
-    pub(crate) fn set_content(&mut self, content: String) {
-        self.content = content;
     }
 }
 
-impl Component<Msg, ()> for RenderedMarkdown {
-    fn update(&mut self, msg: Msg) -> Effects<Msg, ()> {
+impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
+    fn update(&mut self, msg: Msg) -> Effects<Msg, XMSG> {
         log::trace!("---------> in rendered markdown component: {:?}", msg);
         match msg {
+            Msg::ContentChanged(content) => {
+                self.content = content;
+                Effects::none()
+            }
             Msg::PluginMsg(plugin, pmsg) => {
-                self.plugin_context
-                    .borrow_mut()
-                    .update_component(plugin, pmsg, Msg::PluginMsg)
+                let effects =
+                    self.plugin_context
+                        .borrow_mut()
+                        .update_component(plugin, pmsg, Msg::PluginMsg);
+                Effects::none()
             }
         }
     }
 
     fn view(&self) -> Node<Msg> {
-        //let mut plugin_context = self.plugin_context.borrow_mut();
         let plugins = sauron_markdown::Plugins {
             code_fence_processor: Some(Box::new(move |code_fence, code| {
                 if let Some(code_fence) = code_fence {
                     let mut plugin_context = self.plugin_context.borrow_mut();
                     let plugin = Plugins::from_code_fence(code_fence, code, &self.config);
                     Some(plugin_context.map_view(code_fence, plugin, Msg::PluginMsg))
-                    //Some(plugin.view().map_msg(Msg::PluginMsg))
                 } else {
                     None
                 }

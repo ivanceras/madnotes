@@ -1,6 +1,7 @@
 use crate::app::rendered_markdown::Config;
 use rune_script::RuneScript;
 use sauron::prelude::*;
+use std::marker::PhantomData;
 
 pub(crate) mod admonition;
 pub(crate) mod fake_terminal;
@@ -12,20 +13,23 @@ pub(crate) enum Msg {
     RuneScriptMsg(rune_script::Msg),
 }
 
-#[derive(Debug, Default)]
-pub(crate) struct Plugins {
+#[derive(Debug)]
+pub(crate) struct Plugins<XMSG> {
     code_fence: String,
     content: String,
     config: Config,
     rune_script: Option<RuneScript<Msg>>,
+    _phantom_msg: PhantomData<XMSG>,
 }
 
-impl Plugins {
+impl<XMSG> Plugins<XMSG> {
     pub fn dummy() -> Self {
         Self {
             code_fence: "dummy".to_string(),
             content: "dummy".to_string(),
-            ..Default::default()
+            rune_script: None,
+            config: Config::default(),
+            _phantom_msg: PhantomData,
         }
     }
     pub(crate) fn from_code_fence(code_fence: &str, content: &str, config: &Config) -> Self {
@@ -38,11 +42,12 @@ impl Plugins {
             } else {
                 None
             },
+            _phantom_msg: PhantomData,
         }
     }
 }
 
-impl<XMSG> Component<Msg, XMSG> for Plugins {
+impl<XMSG> Component<Msg, XMSG> for Plugins<XMSG> {
     fn update(&mut self, msg: Msg) -> Effects<Msg, XMSG> {
         match &*self.code_fence {
             "rune" => {
