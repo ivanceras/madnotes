@@ -23,6 +23,7 @@
     and rewrite their links.
     - This requires parsing markdown to html, replace the links and back to markdown
     - Maybe use comrak as alternative since it builds a whole tree of the markdown
+- [ ] Split markdown into cells. The boundary of markdown cells, is that if transition into a plugin (i.e. each code fence)
 
 # Issues
 - [ ] Can not run datafusion in wasm
@@ -35,4 +36,6 @@
 - [ ] The `on_mount` event on the second editor in the `rune` plugin is not triggered.
     - Perhaps because there is already a main editor that is mounted
     - Perhaps it has to do with the logic in sauron-markdown when creating nodes for each Markdown tags
+- [ ] The plugins view can not be updated as easily since they are on an iterator call in the markdown.
+    - Need to split markdown text into cells
 

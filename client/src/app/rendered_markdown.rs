@@ -58,6 +58,8 @@ impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
         match msg {
             Msg::ContentChanged(content) => {
                 self.content = content;
+                let mut plugin_context = self.plugin_context.borrow_mut();
+                //plugin_context.clear();
                 Effects::none()
             }
             Msg::PluginMsg(plugin, pmsg) => {
@@ -71,6 +73,9 @@ impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
     }
 
     fn view(&self) -> Node<Msg> {
+        //TODO: there is no seamless way to update the plugins as the content of the raw code
+        //changes. We need to modify the generated markdown to create some sort of cells
+        //each, plugin boundary will be text cells
         let plugins = sauron_markdown::Plugins {
             code_fence_processor: Some(Box::new(move |code_fence, code| {
                 if let Some(code_fence) = code_fence {
@@ -156,5 +161,9 @@ where
             log::trace!("updating the component with {:?}", dmsg);
             mapper(component_clone.clone(), dmsg)
         })
+    }
+
+    fn clear(&mut self) {
+        self.components.clear();
     }
 }
