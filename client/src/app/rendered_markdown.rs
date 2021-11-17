@@ -1,11 +1,11 @@
 use plugins::Plugins;
 use sauron::prelude::*;
-use sauron_markdown::MarkdownParser;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
+mod markdown_parser;
 mod plugins;
 
 #[derive(Debug)]
@@ -73,24 +73,7 @@ impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
     }
 
     fn view(&self) -> Node<Msg> {
-        //TODO: there is no seamless way to update the plugins as the content of the raw code
-        //changes. We need to modify the generated markdown to create some sort of cells
-        //each, plugin boundary will be text cells
-        let plugins = sauron_markdown::Plugins {
-            code_fence_processor: Some(Box::new(move |code_fence, code| {
-                if let Some(code_fence) = code_fence {
-                    let mut plugin_context = self.plugin_context.borrow_mut();
-                    let plugin = Plugins::from_code_fence(code_fence, code, &self.config);
-                    Some(plugin_context.map_view(code_fence, plugin, Msg::PluginMsg))
-                } else {
-                    None
-                }
-            })),
-            inline_html_processor: None,
-            tag_processor: None,
-        };
-        let md_parser = MarkdownParser::with_plugins(&self.content, plugins);
-        md_parser.node()
+        text("rendering markdown here..")
     }
 
     fn style(&self) -> String {

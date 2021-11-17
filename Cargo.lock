@@ -189,12 +189,12 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
+ "html-escape",
  "log",
  "pulldown-cmark",
  "rune",
  "runestick",
  "sauron",
- "sauron-markdown",
  "svgbob",
  "ultron",
  "ultron-ssg",
@@ -1558,7 +1558,7 @@ dependencies = [
 
 [[package]]
 name = "sauron"
-version = "0.43.9"
+version = "0.43.10"
 dependencies = [
  "cfg-if 0.1.10",
  "sauron-core",
@@ -1567,7 +1567,7 @@ dependencies = [
 
 [[package]]
 name = "sauron-core"
-version = "0.43.9"
+version = "0.43.10"
 dependencies = [
  "cfg-if 0.1.10",
  "doc-comment",
@@ -1582,20 +1582,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "sauron-markdown"
-version = "0.43.1"
-dependencies = [
- "html-escape",
- "log",
- "once_cell",
- "pulldown-cmark",
- "sauron",
- "thiserror",
-]
-
-[[package]]
 name = "sauron-node-macro"
-version = "0.43.9"
+version = "0.43.10"
 dependencies = [
  "once_cell",
  "proc-macro2",
