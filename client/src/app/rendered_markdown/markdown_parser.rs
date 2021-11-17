@@ -5,8 +5,14 @@ use std::collections::HashMap;
 
 /// Markdown parser objects, markdown parse state are stored here.
 pub struct MarkdownParser<MSG> {
+    /// groups of nodes to form a cell
+    groups: Vec<Vec<Node<MSG>>>,
+    /// flag to tell the processor to advance to next group,
+    use_next_group: bool,
+    /*
     /// contains the top level elements
     elems: Vec<Node<MSG>>,
+    */
     /// the elements that are processed
     /// the top of this element is the currently being processed on
     spine: Vec<Node<MSG>>,
@@ -28,7 +34,9 @@ pub struct MarkdownParser<MSG> {
 impl<MSG> Default for MarkdownParser<MSG> {
     fn default() -> Self {
         MarkdownParser {
-            elems: vec![],
+            groups: vec![],
+            use_next_group: false,
+            //elems: vec![],
             spine: vec![],
             numbers: HashMap::new(),
             is_title_heading: false,
@@ -49,6 +57,10 @@ impl<MSG> MarkdownParser<MSG> {
         md_parser
     }
 
+    fn bump_group(&mut self) {
+        self.use_next_group = true;
+    }
+
     /// Add a child node to the previous encountered element.
     /// if spine is empty, add it to the top level elements
     fn add_node(&mut self, child: Node<MSG>) {
@@ -59,21 +71,33 @@ impl<MSG> MarkdownParser<MSG> {
                 .expect("expecting an element")
                 .add_children(vec![child]);
         } else {
-            self.elems.push(child);
+            if self.use_next_group {
+                self.groups.push(vec![child]);
+                self.use_next_group = false;
+            } else {
+                if let Some(last_group) = self.groups.last_mut() {
+                    last_group.push(child);
+                }
+            }
         }
+    }
+
+    pub fn groups(self) -> Vec<Vec<Node<MSG>>> {
+        self.groups
     }
 
     /// return the top-level elements
     pub(crate) fn nodes(&self) -> Vec<Node<MSG>> {
-        self.elems.clone()
+        self.groups.iter().flat_map(|elm| elm.clone()).collect()
     }
 
     /// return 1 node, wrapping the the top-level node where there are more than 1.
     pub fn node(&self) -> Node<MSG> {
-        if self.elems.len() == 1 {
-            self.elems[0].clone()
+        let mut nodes = self.nodes();
+        if nodes.len() == 1 {
+            nodes.remove(0)
         } else {
-            p(vec![], self.elems.clone())
+            p([], nodes)
         }
     }
 
@@ -106,6 +130,7 @@ impl<MSG> MarkdownParser<MSG> {
                         self.title = Some(content.to_string());
                     }
                     if self.in_code_block {
+                        self.bump_group();
                         self.add_node(code(
                             if let Some(ref code_fence) = self.code_fence {
                                 vec![class(code_fence)]
@@ -189,13 +214,13 @@ impl<MSG> MarkdownParser<MSG> {
                 match codeblock {
                     CodeBlockKind::Indented => {
                         self.code_fence = None;
-                        code([], [])
                     }
                     CodeBlockKind::Fenced(fence) => {
                         self.code_fence = Some(fence.to_string());
-                        code([], [])
                     }
                 }
+                //comment("starting code block")
+                code([], [])
             }
             Tag::List(None) => ul([], []),
             Tag::List(Some(1)) => ol([], []),

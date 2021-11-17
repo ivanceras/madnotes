@@ -1,5 +1,6 @@
 use markdown_parser::MarkdownParser;
 use plugins::Plugins;
+use sauron::jss::jss;
 use sauron::prelude::*;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -76,11 +77,28 @@ impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
     fn view(&self) -> Node<Msg> {
         //text("rendering markdown here..")
         let markdown_parser = MarkdownParser::from_md(&self.content);
-        markdown_parser.node()
+        div(
+            [],
+            markdown_parser
+                .groups()
+                .into_iter()
+                .map(|group| div([class("cell")], group)),
+        )
     }
 
     fn style(&self) -> String {
-        Component::<plugins::Msg, Msg>::style(&Plugins::dummy())
+        let css = jss! {
+            ".cell": {
+                border: format!("{} solid green", px(2)),
+                margin: px(10),
+                padding: px(10),
+            },
+        };
+        [
+            css,
+            Component::<plugins::Msg, Msg>::style(&Plugins::dummy()),
+        ]
+        .join("\n")
     }
 }
 

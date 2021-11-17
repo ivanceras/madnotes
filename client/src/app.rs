@@ -53,6 +53,7 @@ impl App {
     pub fn with_content(content: &str) -> Self {
         let options = ultron::Options {
             use_block_mode: false,
+            use_virtual_edit: false,
             show_line_numbers: false,
             show_status_line: false,
             theme_name: Some("ayu-light".to_string()),
@@ -192,10 +193,7 @@ impl Application<Msg> for App {
                                     },
                                 },
                             ],
-                            [
-                                self.editor.view().map_msg(Msg::EditorMsg),
-                                self.editor.view_status_line().map_msg(Msg::EditorMsg),
-                            ],
+                            [self.editor.view().map_msg(Msg::EditorMsg)],
                         ),
                         div(
                             [
@@ -240,6 +238,7 @@ impl Application<Msg> for App {
                         ),
                     ],
                 ),
+                self.editor.view_status_line().map_msg(Msg::EditorMsg),
             ],
         )
     }
@@ -260,7 +259,7 @@ impl Application<Msg> for App {
                 display: "flex",
                 flex: "none",
                 width: percent(100),
-                height: format!("calc({} - {})", percent(100), px(self.menu.menu_height())),
+                height: format!("calc({} - {})", percent(100), px(self.menu.menu_height() + self.editor.status_line_height())),
                 background_color: "#fff",
             },
 
