@@ -1,3 +1,4 @@
+use markdown_parser::MarkdownParser;
 use plugins::Plugins;
 use sauron::prelude::*;
 use std::cell::RefCell;
@@ -73,7 +74,9 @@ impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
     }
 
     fn view(&self) -> Node<Msg> {
-        text("rendering markdown here..")
+        //text("rendering markdown here..")
+        let markdown_parser = MarkdownParser::from_md(&self.content);
+        markdown_parser.node()
     }
 
     fn style(&self) -> String {
