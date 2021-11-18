@@ -1558,7 +1558,7 @@ dependencies = [
 
 [[package]]
 name = "sauron"
-version = "0.43.9"
+version = "0.43.10"
 dependencies = [
  "cfg-if 0.1.10",
  "sauron-core",
@@ -1567,7 +1567,7 @@ dependencies = [
 
 [[package]]
 name = "sauron-core"
-version = "0.43.9"
+version = "0.43.10"
 dependencies = [
  "cfg-if 0.1.10",
  "doc-comment",
@@ -1595,7 +1595,7 @@ dependencies = [
 
 [[package]]
 name = "sauron-node-macro"
-version = "0.43.9"
+version = "0.43.10"
 dependencies = [
  "once_cell",
  "proc-macro2",
