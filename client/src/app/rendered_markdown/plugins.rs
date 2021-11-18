@@ -1,3 +1,4 @@
+use crate::app::rendered_markdown::Cell;
 use crate::app::rendered_markdown::Config;
 use rune_script::RuneScript;
 use sauron::prelude::*;
@@ -31,6 +32,27 @@ impl<XMSG> Plugins<XMSG> {
             config: Config::default(),
             _phantom_msg: PhantomData,
         }
+    }
+    pub(crate) fn from_cell(cell: &Cell) -> Self {
+        log::trace!("plugin cell: {:#?}", cell);
+        if cell.nodes.len() > 0 {
+            let first_node = &cell.nodes[0];
+            let children = first_node.get_children().expect("must have children");
+            if children.len() > 0 {
+                let first_child = &children[0];
+                if let Some(&"code") = first_child.tag() {
+                    log::trace!("this is a code");
+                    log::trace!("first child: {:#?}", first_child);
+                    let code_fence = first_child.get_attribute_value(&"class");
+                    log::trace!("code fence: {:?}", code_fence);
+                    let grand_children =
+                        first_child.get_children().expect("must have text children");
+                    let code = grand_children[0].text().expect("must be a text");
+                    log::trace!("code: {}", code);
+                }
+            }
+        }
+        Self::dummy()
     }
     pub(crate) fn from_code_fence(code_fence: &str, content: &str, config: &Config) -> Self {
         Self {

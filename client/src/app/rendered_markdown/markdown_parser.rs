@@ -9,10 +9,6 @@ pub struct MarkdownParser<MSG> {
     groups: Vec<Vec<Node<MSG>>>,
     /// flag to tell the processor to advance to next group,
     use_next_group: bool,
-    /*
-    /// contains the top level elements
-    elems: Vec<Node<MSG>>,
-    */
     /// the elements that are processed
     /// the top of this element is the currently being processed on
     spine: Vec<Node<MSG>>,
@@ -36,7 +32,6 @@ impl<MSG> Default for MarkdownParser<MSG> {
         MarkdownParser {
             groups: vec![],
             use_next_group: false,
-            //elems: vec![],
             spine: vec![],
             numbers: HashMap::new(),
             is_title_heading: false,
@@ -57,10 +52,6 @@ impl<MSG> MarkdownParser<MSG> {
         md_parser
     }
 
-    fn bump_group(&mut self) {
-        self.use_next_group = true;
-    }
-
     /// Add a child node to the previous encountered element.
     /// if spine is empty, add it to the top level elements
     fn add_node(&mut self, child: Node<MSG>) {
@@ -72,8 +63,9 @@ impl<MSG> MarkdownParser<MSG> {
                 .add_children(vec![child]);
         } else {
             if self.use_next_group {
+                // push the current spine to a group
+                //self.groups.push(self.spine.drain(..).collect());
                 self.groups.push(vec![child]);
-                self.use_next_group = false;
             } else {
                 if let Some(last_group) = self.groups.last_mut() {
                     last_group.push(child);
@@ -130,7 +122,8 @@ impl<MSG> MarkdownParser<MSG> {
                         self.title = Some(content.to_string());
                     }
                     if self.in_code_block {
-                        self.bump_group();
+                        self.use_next_group = true;
+                        log::info!("in code block.. need to use next_group");
                         self.add_node(code(
                             if let Some(ref code_fence) = self.code_fence {
                                 vec![class(code_fence)]
@@ -142,6 +135,8 @@ impl<MSG> MarkdownParser<MSG> {
                         ));
                     } else {
                         //TODO: clean this html here
+                        self.use_next_group = false;
+                        log::info!("stopping to use next_group");
                         self.add_node(text(content));
                     }
                 }
@@ -304,7 +299,12 @@ impl<MSG> MarkdownParser<MSG> {
             }
             _ => (),
         }
-        self.add_node(top);
+        //self.add_node(top);
+        if self.use_next_group {
+            self.groups.push(vec![top])
+        } else {
+            self.add_node(top);
+        }
     }
 
     // TODO: escape html here
