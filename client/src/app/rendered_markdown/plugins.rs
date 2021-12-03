@@ -33,27 +33,32 @@ impl<XMSG> Plugins<XMSG> {
             _phantom_msg: PhantomData,
         }
     }
-    pub(crate) fn from_cell(cell: &Cell) -> Self {
-        log::trace!("plugin cell: {:#?}", cell);
-        if cell.nodes.len() > 0 {
-            let first_node = &cell.nodes[0];
-            if let Some(children) = first_node.get_children() {
-                if children.len() > 0 {
-                    let first_child = &children[0];
-                    if let Some(&"code") = first_child.tag() {
-                        log::trace!("this is a code");
-                        log::trace!("first child: {:#?}", first_child);
-                        let code_fence = first_child.get_attribute_value(&"class");
-                        log::trace!("code fence: {:?}", code_fence);
-                        let grand_children =
-                            first_child.get_children().expect("must have text children");
-                        let code = grand_children[0].text().expect("must be a text");
-                        log::trace!("code: {}", code);
-                    }
+    fn get_class_name<MSG>(node: &Node<MSG>) -> Option<&str> {
+        if let Some(attrs) = node.get_attribute_value(&"class") {
+            if let Some(value) = attrs[0].get_simple() {
+                value.as_str()
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+    pub(crate) fn from_cell(cell: &Cell, config: &Config) -> Self {
+        let first_child = &cell.nodes[0];
+        if let Some(&"code") = first_child.tag() {
+            log::info!("yes4");
+            let code_fence = Self::get_class_name(first_child).unwrap_or("");
+            if let Some(grand_children) = first_child.get_children() {
+                log::info!("yes5");
+                if let Some(first_grand_child) = grand_children.get(0) {
+                    log::info!("yes6");
+                    let content = first_grand_child.text().expect("must be a text");
+                    return Self::from_code_fence(code_fence, content, config);
                 }
             }
         }
-        Self::dummy()
+        unreachable!();
     }
     pub(crate) fn from_code_fence(code_fence: &str, content: &str, config: &Config) -> Self {
         Self {
@@ -91,6 +96,7 @@ impl<XMSG> Component<Msg, XMSG> for Plugins<XMSG> {
     }
 
     fn view(&self) -> Node<Msg> {
+        log::trace!("viewing a plugin...");
         match &*self.code_fence {
             "bob" => svgbob_plugin::convert_svgbob(&self.content),
             "{side-to-side.bob}" => svgbob_plugin::side_to_side_bob(&self.content),

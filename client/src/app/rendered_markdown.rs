@@ -13,6 +13,7 @@ mod plugins;
 #[derive(Debug)]
 pub(crate) enum Msg {
     ContentChanged(String),
+    PluginMsg(usize, plugins::Msg),
 }
 
 #[derive(Clone, Debug)]
@@ -24,13 +25,36 @@ impl Cell {
     fn from_nodes(nodes: Vec<Node<Msg>>) -> Self {
         Self { nodes }
     }
+
+    /// returns true if this cell corresponds to a code block in the markdown
+    pub fn is_code_cell(&self) -> bool {
+        if let Some(first_child) = self.nodes.get(0) {
+            log::info!("yes3, first_child: {:#?}", first_child);
+            if let Some(&"code") = first_child.tag() {
+                log::info!("yes4");
+                if let Some(grand_children) = first_child.get_children() {
+                    log::info!("yes5");
+                    if let Some(first_grand_child) = grand_children.get(0) {
+                        log::info!("yes6");
+                        return first_grand_child.is_text();
+                    }
+                }
+            }
+        }
+        log::info!("---->>> NO, not a code cell..");
+        false
+    }
+}
+
+enum CellControl<MSG> {
+    Cell(Cell),
+    Plugin(Plugins<MSG>),
 }
 
 pub(crate) struct RenderedMarkdown<XMSG> {
     content: String,
     config: Config,
-    cells: Vec<Cell>,
-    cell_plugins: Vec<Plugins<Msg>>,
+    cell_controls: Vec<CellControl<Msg>>,
     _phantom_msg: PhantomData<XMSG>,
 }
 
@@ -54,13 +78,20 @@ impl<XMSG> RenderedMarkdown<XMSG> {
         let groups = markdown_parser.groups();
         let cells: Vec<Cell> = groups.into_iter().map(|g| Cell::from_nodes(g)).collect();
         log::trace!("cells: {:#?}", cells);
-        let cell_plugins: Vec<Plugins<Msg>> =
-            cells.iter().map(|cell| Plugins::from_cell(cell)).collect();
+        let cell_controls: Vec<CellControl<Msg>> = cells
+            .into_iter()
+            .map(|cell| {
+                if cell.is_code_cell() {
+                    CellControl::Plugin(Plugins::from_cell(&cell, &config))
+                } else {
+                    CellControl::Cell(cell)
+                }
+            })
+            .collect();
         Self {
             content: content.to_string(),
-            config: Config::default(),
-            cells,
-            cell_plugins,
+            config,
+            cell_controls,
             _phantom_msg: PhantomData,
         }
     }
@@ -73,20 +104,42 @@ impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
             Msg::ContentChanged(content) => {
                 let markdown_parser = MarkdownParser::from_md(&content);
                 let groups = markdown_parser.groups();
-                let cells = groups.into_iter().map(|g| Cell::from_nodes(g)).collect();
-                self.content = content;
-                self.cells = cells;
+                let cells: Vec<Cell> = groups.into_iter().map(|g| Cell::from_nodes(g)).collect();
+                self.cell_controls = cells
+                    .into_iter()
+                    .map(|cell| {
+                        if cell.is_code_cell() {
+                            CellControl::Plugin(Plugins::from_cell(&cell, &self.config))
+                        } else {
+                            CellControl::Cell(cell)
+                        }
+                    })
+                    .collect();
                 Effects::none()
             }
+            Msg::PluginMsg(plugin_index, pmsg) => match &mut self.cell_controls[plugin_index] {
+                CellControl::Plugin(plugin) => {
+                    plugin.update(pmsg);
+                    Effects::none()
+                }
+                CellControl::Cell(_cell) => Effects::none(),
+            },
         }
     }
 
     fn view(&self) -> Node<Msg> {
         div(
             [],
-            self.cells
+            self.cell_controls
                 .iter()
-                .map(|cell| div([class("cell")], cell.nodes.clone())),
+                .enumerate()
+                .map(|(idx, control)| match control {
+                    CellControl::Plugin(plugin) => div(
+                        [class("cell")],
+                        [plugin.view().map_msg(move |pmsg| Msg::PluginMsg(idx, pmsg))],
+                    ),
+                    CellControl::Cell(cell) => div([class("cell normal")], cell.nodes.clone()),
+                }),
         )
     }
 
