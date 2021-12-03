@@ -64,15 +64,32 @@ The files are uploaded in ipfs to preserve the linked components and data being 
 
 ## Features
 - Uses `ipfs` to upload and reference files
+- Primarily use csv for data processing and storing the results
+- Supports running SQL against a csv files from `ipfs`
 - Data visualization and charting
-- Primarily use csv for data processing and storage
-- Supports running SQL against a csv data
+- Write and execute scripts dynamically
+- Use svgbob to draw and render text base diagrams
 
 ## Security
 - Sharing of notes is safe as the scripts is run in a sandbox environment using wasm.
 - Referenced files are coming from ipfs node and therefore the runtime is not allowed to access local files of the user.
 
 
+## Scripts demo
+
+```rune
+pub fn main(number) {
+    add(number) + 10
+}
+```
+
+## TODO demo
+- csv processing
+- SQL support
+- data visualization and charting
+
+
+## Markdown syntax is rendered as it is.
 
 You can write madnotes using markdown.
 
@@ -101,12 +118,6 @@ Here's a numbered list:
 
 ```note
 Note that madnotes, overloaded the code fence tag a lot
-```
-You can write scripts using
-```rune
-pub fn main(number) {
-    add(number) + 10
-}
 ```
 
 Currently we only support 1 scripting language which is Rune.
