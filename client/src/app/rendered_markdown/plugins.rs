@@ -37,18 +37,19 @@ impl<XMSG> Plugins<XMSG> {
         log::trace!("plugin cell: {:#?}", cell);
         if cell.nodes.len() > 0 {
             let first_node = &cell.nodes[0];
-            let children = first_node.get_children().expect("must have children");
-            if children.len() > 0 {
-                let first_child = &children[0];
-                if let Some(&"code") = first_child.tag() {
-                    log::trace!("this is a code");
-                    log::trace!("first child: {:#?}", first_child);
-                    let code_fence = first_child.get_attribute_value(&"class");
-                    log::trace!("code fence: {:?}", code_fence);
-                    let grand_children =
-                        first_child.get_children().expect("must have text children");
-                    let code = grand_children[0].text().expect("must be a text");
-                    log::trace!("code: {}", code);
+            if let Some(children) = first_node.get_children() {
+                if children.len() > 0 {
+                    let first_child = &children[0];
+                    if let Some(&"code") = first_child.tag() {
+                        log::trace!("this is a code");
+                        log::trace!("first child: {:#?}", first_child);
+                        let code_fence = first_child.get_attribute_value(&"class");
+                        log::trace!("code fence: {:?}", code_fence);
+                        let grand_children =
+                            first_child.get_children().expect("must have text children");
+                        let code = grand_children[0].text().expect("must be a text");
+                        log::trace!("code: {}", code);
+                    }
                 }
             }
         }

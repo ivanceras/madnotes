@@ -6,9 +6,13 @@ use std::collections::HashMap;
 /// Markdown parser objects, markdown parse state are stored here.
 pub struct MarkdownParser<MSG> {
     /// groups of nodes to form a cell
+    ///
+    /// The first node should be in groups[0], up until the first code block is encountered
+    /// When a code block is encountered, the group_index is incremented, putting the nodes on this
+    /// new index.
+    ///
+    /// When a code block end, a new group_index is also incremented
     groups: Vec<Vec<Node<MSG>>>,
-    /// flag to tell the processor to advance to next group,
-    use_next_group: bool,
     /// the elements that are processed
     /// the top of this element is the currently being processed on
     spine: Vec<Node<MSG>>,
@@ -31,7 +35,6 @@ impl<MSG> Default for MarkdownParser<MSG> {
     fn default() -> Self {
         MarkdownParser {
             groups: vec![],
-            use_next_group: false,
             spine: vec![],
             numbers: HashMap::new(),
             is_title_heading: false,
@@ -62,15 +65,7 @@ impl<MSG> MarkdownParser<MSG> {
                 .expect("expecting an element")
                 .add_children(vec![child]);
         } else {
-            if self.use_next_group {
-                // push the current spine to a group
-                //self.groups.push(self.spine.drain(..).collect());
-                self.groups.push(vec![child]);
-            } else {
-                if let Some(last_group) = self.groups.last_mut() {
-                    last_group.push(child);
-                }
-            }
+            self.groups.push(vec![child]);
         }
     }
 
@@ -122,7 +117,7 @@ impl<MSG> MarkdownParser<MSG> {
                         self.title = Some(content.to_string());
                     }
                     if self.in_code_block {
-                        self.use_next_group = true;
+                        self.close_group();
                         log::info!("in code block.. need to use next_group");
                         self.add_node(code(
                             if let Some(ref code_fence) = self.code_fence {
@@ -134,8 +129,6 @@ impl<MSG> MarkdownParser<MSG> {
                             vec![text(content)],
                         ));
                     } else {
-                        //TODO: clean this html here
-                        self.use_next_group = false;
                         log::info!("stopping to use next_group");
                         self.add_node(text(content));
                     }
@@ -266,44 +259,18 @@ impl<MSG> MarkdownParser<MSG> {
     }
 
     fn close_tag(&mut self, tag: &Tag) {
-        let spine_len = self.spine.len();
-        assert!(spine_len >= 1);
-        let mut top = self.spine.pop().expect("must have one element");
-
         match tag {
-            Tag::Heading(1) => self.is_title_heading = false,
-            Tag::CodeBlock(_) => self.in_code_block = false,
-            Tag::Table(aligns) => {
-                if let Some(element) = top.as_element_mut() {
-                    for r in element.children_mut() {
-                        if let Some(r) = r.as_element_mut() {
-                            for (i, c) in r.children_mut().iter_mut().enumerate() {
-                                if let Some(tag) = c.as_element_mut() {
-                                    match aligns[i] {
-                                        Alignment::None => {}
-                                        Alignment::Left => {
-                                            tag.add_attributes(vec![class("text-left")])
-                                        }
-                                        Alignment::Center => {
-                                            tag.add_attributes(vec![class("text-center")])
-                                        }
-                                        Alignment::Right => {
-                                            tag.add_attributes(vec![class("text-right")])
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            Tag::CodeBlock(_) => {
+                self.in_code_block = false;
+                self.close_group();
             }
             _ => (),
         }
-        //self.add_node(top);
-        if self.use_next_group {
-            self.groups.push(vec![top])
-        } else {
-            self.add_node(top);
+    }
+
+    fn close_group(&mut self) {
+        if !self.spine.is_empty() {
+            self.groups.push(self.spine.drain(..).collect());
         }
     }
 
