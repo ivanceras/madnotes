@@ -29,19 +29,14 @@ impl Cell {
     /// returns true if this cell corresponds to a code block in the markdown
     pub fn is_code_cell(&self) -> bool {
         if let Some(first_child) = self.nodes.get(0) {
-            log::info!("yes3, first_child: {:#?}", first_child);
             if let Some(&"code") = first_child.tag() {
-                log::info!("yes4");
                 if let Some(grand_children) = first_child.get_children() {
-                    log::info!("yes5");
                     if let Some(first_grand_child) = grand_children.get(0) {
-                        log::info!("yes6");
                         return first_grand_child.is_text();
                     }
                 }
             }
         }
-        log::info!("---->>> NO, not a code cell..");
         false
     }
 }
@@ -77,7 +72,6 @@ impl<XMSG> RenderedMarkdown<XMSG> {
         let markdown_parser = MarkdownParser::from_md(content);
         let groups = markdown_parser.groups();
         let cells: Vec<Cell> = groups.into_iter().map(|g| Cell::from_nodes(g)).collect();
-        log::trace!("cells: {:#?}", cells);
         let cell_controls: Vec<CellControl<Msg>> = cells
             .into_iter()
             .map(|cell| {
@@ -99,7 +93,6 @@ impl<XMSG> RenderedMarkdown<XMSG> {
 
 impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
     fn update(&mut self, msg: Msg) -> Effects<Msg, XMSG> {
-        log::trace!("---------> in rendered markdown component: {:?}", msg);
         match msg {
             Msg::ContentChanged(content) => {
                 let markdown_parser = MarkdownParser::from_md(&content);

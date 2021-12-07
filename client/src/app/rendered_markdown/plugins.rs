@@ -47,12 +47,9 @@ impl<XMSG> Plugins<XMSG> {
     pub(crate) fn from_cell(cell: &Cell, config: &Config) -> Self {
         let first_child = &cell.nodes[0];
         if let Some(&"code") = first_child.tag() {
-            log::info!("yes4");
             let code_fence = Self::get_class_name(first_child).unwrap_or("");
             if let Some(grand_children) = first_child.get_children() {
-                log::info!("yes5");
                 if let Some(first_grand_child) = grand_children.get(0) {
-                    log::info!("yes6");
                     let content = first_grand_child.text().expect("must be a text");
                     return Self::from_code_fence(code_fence, content, config);
                 }
@@ -96,7 +93,6 @@ impl<XMSG> Component<Msg, XMSG> for Plugins<XMSG> {
     }
 
     fn view(&self) -> Node<Msg> {
-        log::trace!("viewing a plugin...");
         match &*self.code_fence {
             "bob" => svgbob_plugin::convert_svgbob(&self.content),
             "{side-to-side.bob}" => svgbob_plugin::side_to_side_bob(&self.content),

@@ -175,6 +175,7 @@ impl<MSG> MarkdownParser<MSG> {
             self.process_inline_html(&inline_html);
             inline_html.clear();
         }
+        self.close_group();
     }
 
     fn make_tag(&mut self, tag: &Tag) -> Node<MSG> {
@@ -271,6 +272,8 @@ impl<MSG> MarkdownParser<MSG> {
     fn close_group(&mut self) {
         if !self.spine.is_empty() {
             self.groups.push(self.spine.drain(..).collect());
+        } else {
+            log::trace!("spine is not empty..");
         }
     }
 
