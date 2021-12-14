@@ -43,7 +43,7 @@ impl<XMSG> RuneScript<XMSG> {
             show_line_numbers: false,
             show_status_line: false,
             theme_name: Some("ayu-light".to_string()),
-            syntax_token: "rune".to_string(),
+            syntax_token: "rust".to_string(), //should be rune, but no syntax highlight for rune available for now
             ..Default::default()
         };
 
@@ -96,6 +96,7 @@ impl<XMSG> Component<Msg, XMSG> for RuneScript<XMSG> {
                 Effects::none()
             }
             Msg::ScriptChanged(script) => {
+                log::trace!("script changed to: {}", script);
                 self.script = script.to_string();
                 Effects::none()
             }
@@ -124,20 +125,10 @@ impl<XMSG> Component<Msg, XMSG> for RuneScript<XMSG> {
 
     fn view(&self) -> Node<Msg> {
         log::trace!("Rendering Rune script....");
-        let raw_code: Node<Msg> =
-            ultron_ssg::render(&self.script, "rune", Some(&self.config.highlight_theme));
         div(
             [class("rune_script")],
             [
-                div(
-                    [
-                        class("rune_raw"),
-                        on_mousedown(|me| Msg::Mousedown(me.client_x(), me.client_y())),
-                        on_mouseup(|me| Msg::Mouseup(me.client_x(), me.client_y())),
-                        on_mousemove(|me| Msg::Mousemove(me.client_x(), me.client_y())),
-                    ],
-                    [raw_code],
-                ),
+                self.editor.view().map_msg(Msg::EditorMsg),
                 if let Some(output) = &self.output {
                     div([class("output")], [text(output)])
                 } else {

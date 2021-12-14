@@ -15,7 +15,7 @@
         - [ ] CSV data plugin to be used for reference in some other scripts such as:
             - [ ] SQL
             - [ ] restq
-            - [ ] rune script
+            - [X] rune script
         - [ ] data viewer
         - [ ] charts, use plotters
 - [ ] Make a POC in which it pulls files from ipfs
@@ -23,6 +23,7 @@
     and rewrite their links.
     - This requires parsing markdown to html, replace the links and back to markdown
     - Maybe use comrak as alternative since it builds a whole tree of the markdown
+- [ ] Use [quick-xml](https://github.com/tafia/quick-xml) for parsing inline html
 - [ ] Split markdown into cells. The boundary of markdown cells, is that if transition into a plugin (i.e. each code fence)
 
 # Issues

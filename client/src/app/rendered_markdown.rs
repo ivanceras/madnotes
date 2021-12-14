@@ -112,8 +112,11 @@ impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
             }
             Msg::PluginMsg(plugin_index, pmsg) => match &mut self.cell_controls[plugin_index] {
                 CellControl::Plugin(plugin) => {
-                    plugin.update(pmsg);
-                    Effects::none()
+                    let effects = plugin.update(pmsg);
+                    let (local, _) = effects
+                        .localize(move |pmsg| Msg::PluginMsg(plugin_index, pmsg))
+                        .unzip();
+                    Effects::new(local, [])
                 }
                 CellControl::Cell(_cell) => Effects::none(),
             },
