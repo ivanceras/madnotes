@@ -128,7 +128,15 @@ impl<XMSG> Component<Msg, XMSG> for RuneScript<XMSG> {
         div(
             [class("rune_script")],
             [
-                self.editor.view().map_msg(Msg::EditorMsg),
+                div(
+                    [
+                        class("rune_editor"),
+                        on_mousemove(|me| Msg::Mousemove(me.client_x(), me.client_y())),
+                        on_mouseup(|me| Msg::Mouseup(me.client_x(), me.client_y())),
+                        on_mousedown(|me| Msg::Mousedown(me.client_x(), me.client_y())),
+                    ],
+                    [self.editor.view().map_msg(Msg::EditorMsg)],
+                ),
                 if let Some(output) = &self.output {
                     div([class("output")], [text(output)])
                 } else {
