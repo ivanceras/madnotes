@@ -142,6 +142,9 @@ impl<XMSG> Component<Msg, XMSG> for RenderedMarkdown<XMSG> {
     fn style(&self) -> String {
         let css = jss! {
             ".cell": {
+            },
+
+            ".cell_debug": {
                 border: format!("{} solid green", px(2)),
                 margin: px(10),
                 padding: px(10),
