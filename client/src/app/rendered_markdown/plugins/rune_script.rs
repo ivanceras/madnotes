@@ -44,6 +44,8 @@ impl<XMSG> RuneScript<XMSG> {
             show_status_line: false,
             theme_name: Some("ayu-light".to_string()),
             syntax_token: "rust".to_string(), //should be rune, but no syntax highlight for rune available for now
+            // only expands to the number of lines
+            occupy_container: false,
             ..Default::default()
         };
 
